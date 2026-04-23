@@ -206,6 +206,20 @@ end
 	component.Value = false -- Valid
 	component.Value = 100 -- Type error
 	```
+
+	You will get an error if you attempt to run the following code.
+
+	```lua
+	ECS.CreateComponent("Errors", 0)
+	ECS.NewEntity()
+
+	local component = ECS.GiveComponent(1, "Errors")
+
+	component.ComponentChanged = "foo" -- Error
+	component.NewKey = "bar" -- Error
+	print(component.RealValue) -- Error
+	```
+
 ]=]
 
 --[=[
@@ -225,7 +239,7 @@ end
 	@within ECS
 	@readonly
 
-	Name of the tag given to instances bound to an entity.
+	Name of the CollectionService tag given to instances bound to an entity.
 ]=]
 
 --[=[
@@ -608,11 +622,11 @@ end
 
 --[=[
 	Creates a new component with value T, the value given to it will be the default that is
-	assigned to entities whenever they are given the component
+	assigned to entities whenever they are given the component.
 
 	@param name string -- Name of component
 	@param value T -- Default value for the component
-	@error "Invalid value" -- Some values are not valid to be used when making a component
+	@error "Invalid value" -- Value given is an invalid value
 	@error "Exceeded maximum" -- There is a maximum of 32 components that can be created
 
 	```lua
@@ -624,8 +638,8 @@ end
 	```
 
 	:::caution Invalid Values
-	**table**, **thread**, **userdata**, and **function** will cause the function to error, these types are not allowed
-	to be used for the value of the component
+	`table`, `thread`, `userdata`, and `function` will cause the function to error, these types are not allowed
+	to be used for the value of the component.
 	:::
 ]=]
 function ECS.CreateComponent<T>(name: string, value: T) : ()
