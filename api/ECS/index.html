@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="plugin-moonwave plugin-id-moonwave" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.7.0">
+<title data-rh="true">ECS | Romal&#x27;s ECS</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://romalvardhn.github.io/api/ECS"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="ECS | Romal&#x27;s ECS"><meta data-rh="true" name="description" content="Romal&#x27;s ECS module. Adds support for the ECS paradigm. Provides most common ECS features such as being able to query
+entities."><meta data-rh="true" property="og:description" content="Romal&#x27;s ECS module. Adds support for the ECS paradigm. Provides most common ECS features such as being able to query
+entities."><link data-rh="true" rel="canonical" href="https://romalvardhn.github.io/api/ECS"><link data-rh="true" rel="alternate" href="https://romalvardhn.github.io/api/ECS" hreflang="en"><link data-rh="true" rel="alternate" href="https://romalvardhn.github.io/api/ECS" hreflang="x-default"><link rel="stylesheet" href="/assets/css/styles.b9f2c64d.css">
+<script src="/assets/js/runtime~main.e1e341b7.js" defer="defer"></script>
+<script src="/assets/js/main.39cd5749.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();null!==e?t(e):window.matchMedia("(prefers-color-scheme: dark)").matches?t("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,t("light"))}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><b class="navbar__title text--truncate">Romal&#x27;s ECS</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/api/">API</a></div><div class="navbar__items navbar__items--right"><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"><div class="navbar__search"><span aria-label="expand searchbar" role="button" class="search-icon" tabindex="0"></span><input id="search_input_react" type="search" placeholder="Loading..." aria-label="Search" class="navbar__search-input search-bar" disabled=""></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_z2l0 docPageContainer_wNNk"><div class="docPage_Dpn1"><div class="docSidebarContainer_o_re"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" href="/api/ECS">​E​C​S</a></li></ul></nav></div></div><main class="docMainContainer_HJE1"><div class="container padding-vert--lg"><div class="row"><div class="col docItemCol_MU3C"><div class="docItemContainer_Wv98"><article><div class="member_J0w1 markdown"><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_oUs_"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><header><h1 class="docTitle_mZRt" style="text-decoration:none"><span style="display:inline-block">E</span><span style="display:inline-block">C</span><span style="display:inline-block">S</span></h1><div class="luaClassTags_EipM"></div><div>
+<p>
+  Romal's ECS module. Adds support for the ECS paradigm. Provides most common ECS features such as being able to query
+  entities.
+</p>
+</div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="types">Types<a href="#types" class="hash-link" aria-label="Direct link to Types" title="Direct link to Types">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Connection"><code style="text-decoration:none">Connection</code><a href="#Connection" class="hash-link" aria-label="Direct link to Connection" title="Direct link to Connection">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L169"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>Connection<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>Disconnect<!-- -->: </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="purple_ieR2">(</code><code class="purple_ieR2">)</code></div></div><code>}</code></div><div></div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Event&lt;T&gt;"><code style="text-decoration:none">Event&lt;T&gt;</code><a href="#Event&lt;T&gt;" class="hash-link" aria-label="Direct link to Event&lt;T&gt;" title="Direct link to Event&lt;T&gt;">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L176"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>Event&lt;T&gt;<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>Connect<!-- -->: </code><code class="purple_ieR2">(</code><code class="blue_P4bS">T</code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/api/ECS#Connection">Connection</a></code></div><div><code>Once<!-- -->: </code><code class="purple_ieR2">(</code><code class="blue_P4bS">T</code><code class="purple_ieR2">)</code><code class="purple_ieR2"> → </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="/api/ECS#Connection">Connection</a></code></div></div><code>}</code></div><div></div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Component&lt;T&gt;"><code style="text-decoration:none">Component&lt;T&gt;</code><a href="#Component&lt;T&gt;" class="hash-link" aria-label="Direct link to Component&lt;T&gt;" title="Direct link to Component&lt;T&gt;">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L224"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>Component&lt;T&gt;<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>Value<!-- -->: </code><code class="blue_P4bS">T</code></div><div><code>ComponentChanged<!-- -->: </code><code class="blue_P4bS">Event</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">T</code><code class="op_lSLc">&gt;</code></div></div><code>}</code></div><div>
+<p>ComponentChanged is read only, Value can be written to.</p>
+<pre class="language-lua"><code class="language-lua">ECS<span class="token punctuation">.</span><span class="token function">CreateComponent</span><span class="token punctuation">(</span><span class="token string">"Test"</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+ECS<span class="token punctuation">.</span><span class="token function">NewEntity</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> component <span class="token operator">=</span> ECS<span class="token punctuation">.</span><span class="token function">GiveComponent</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"Test"</span><span class="token punctuation">)</span>
+
+component<span class="token punctuation">.</span>ComponentChanged<span class="token punctuation">:</span><span class="token function">Connect</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>newValue<span class="token punctuation">)</span>
+	<span class="token function">print</span><span class="token punctuation">(</span>newValue<span class="token punctuation">)</span> <span class="token comment">-- Prints 300</span>
+<span class="token keyword">end</span><span class="token punctuation">)</span>
+
+component<span class="token punctuation">.</span>Value <span class="token operator">=</span> <span class="token number">300</span>
+</code></pre>
+<p>You are able to get intellisense by casting the type.</p>
+<pre class="language-lua"><code class="language-lua">ECS<span class="token punctuation">.</span><span class="token function">CreateComponent</span><span class="token punctuation">(</span><span class="token string">"Intellisense"</span><span class="token punctuation">,</span> <span class="token keyword">true</span><span class="token punctuation">)</span>
+ECS<span class="token punctuation">.</span><span class="token function">NewEntity</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> component <span class="token operator">=</span> ECS<span class="token punctuation">.</span><span class="token function">GiveComponent</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"Intellisense"</span><span class="token punctuation">)</span> <span class="token punctuation">::</span> ECS<span class="token punctuation">.</span>Component<span class="token operator">&#x3C;</span>boolean<span class="token operator">></span>
+
+component<span class="token punctuation">.</span>Value <span class="token operator">=</span> <span class="token keyword">false</span> <span class="token comment">-- Valid</span>
+component<span class="token punctuation">.</span>Value <span class="token operator">=</span> <span class="token number">100</span> <span class="token comment">-- Type error</span>
+</code></pre>
+<p>You will get an error if you attempt to run the following code.</p>
+<pre class="language-lua"><code class="language-lua">ECS<span class="token punctuation">.</span><span class="token function">CreateComponent</span><span class="token punctuation">(</span><span class="token string">"Errors"</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+ECS<span class="token punctuation">.</span><span class="token function">NewEntity</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> component <span class="token operator">=</span> ECS<span class="token punctuation">.</span><span class="token function">GiveComponent</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"Errors"</span><span class="token punctuation">)</span>
+
+component<span class="token punctuation">.</span>ComponentChanged <span class="token operator">=</span> <span class="token string">"foo"</span> <span class="token comment">-- Error</span>
+component<span class="token punctuation">.</span>NewKey <span class="token operator">=</span> <span class="token string">"bar"</span> <span class="token comment">-- Error</span>
+<span class="token function">print</span><span class="token punctuation">(</span>component<span class="token punctuation">.</span>RealValue<span class="token punctuation">)</span> <span class="token comment">-- Error</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Entity&lt;T&gt;"><code style="text-decoration:none">Entity&lt;T&gt;</code><a href="#Entity&lt;T&gt;" class="hash-link" aria-label="Direct link to Entity&lt;T&gt;" title="Direct link to Entity&lt;T&gt;">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L236"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code class="purple_ieR2">interface</code> <code>Entity&lt;T&gt;<!-- --> <!-- -->{</code><div class="inset_uKQm"><div><code>Components<!-- -->: </code><code class="blue_P4bS">number</code></div><div><code>Instance<!-- -->: </code><code class="blue_P4bS">T?</code></div><div><code>ComponentAdded<!-- -->: </code><code class="blue_P4bS">Event</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">string</code><code class="op_lSLc">&gt;</code></div><div><code>ComponentRemoved<!-- -->: </code><code class="blue_P4bS">Event</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">string</code><code class="op_lSLc">&gt;</code></div></div><code>}</code></div><div>
+<p>
+  An entity table, ComponentAdded and ComponentRemoved return the name of the component
+  that was removed when calling functions connected to them. All of these values are read only.
+</p>
+</div><h2 class="anchor anchorWithStickyNavbar_LWe7" id="properties">Properties<a href="#properties" class="hash-link" aria-label="Direct link to Properties" title="Direct link to Properties">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="_ENTITY_TAG_NAME"><code style="text-decoration:none">_ENTITY_TAG_NAME</code><a href="#_ENTITY_TAG_NAME" class="hash-link" aria-label="Direct link to _ENTITY_TAG_NAME" title="Direct link to _ENTITY_TAG_NAME">​</a></h3><span class="badge_Ba2I" style="color:#e74c3c"><span class="badgeTooltip_cWXP">This item is read only and cannot be modified.</span><span class="badgeToolTipTail_H9D_"><svg xmlns="http://www.w3.org/2000/svg" height="300px" width="300px" fill="#e74c3c" x="0px" y="0px" viewBox="0 0 96 96"><path d="M70.354,15.662h-7.496H25.566c-3.282,0-5.19-0.776-5.728-1.169v-1.456c0.538-0.393,2.445-1.168,5.728-1.168h46.479V8H25.566  c-4.776,0-9.594,1.468-9.594,4.747v61.458C15.972,86.645,20.328,88,37.495,88h42.535V15.662H70.354z"></path></svg> <!-- -->Read Only</span></span><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L244"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.<!-- -->_ENTITY_TAG_NAME<!-- -->:<!-- --> </code> <code class="blue_P4bS">string</code></div><div>
+<p>Name of the CollectionService tag given to instances bound to an entity.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="_ENTITY_ID_STRING"><code style="text-decoration:none">_ENTITY_ID_STRING</code><a href="#_ENTITY_ID_STRING" class="hash-link" aria-label="Direct link to _ENTITY_ID_STRING" title="Direct link to _ENTITY_ID_STRING">​</a></h3><span class="badge_Ba2I" style="color:#e74c3c"><span class="badgeTooltip_cWXP">This item is read only and cannot be modified.</span><span class="badgeToolTipTail_H9D_"><svg xmlns="http://www.w3.org/2000/svg" height="300px" width="300px" fill="#e74c3c" x="0px" y="0px" viewBox="0 0 96 96"><path d="M70.354,15.662h-7.496H25.566c-3.282,0-5.19-0.776-5.728-1.169v-1.456c0.538-0.393,2.445-1.168,5.728-1.168h46.479V8H25.566  c-4.776,0-9.594,1.468-9.594,4.747v61.458C15.972,86.645,20.328,88,37.495,88h42.535V15.662H70.354z"></path></svg> <!-- -->Read Only</span></span><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L252"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.<!-- -->_ENTITY_ID_STRING<!-- -->:<!-- --> </code> <code class="blue_P4bS">string</code></div><div>
+<p>Name of the attribute given to instances bound to an entity. The attribute holds the ID of the entity.</p>
+</div><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a href="#functions" class="hash-link" aria-label="Direct link to Functions" title="Direct link to Functions">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="QueryWithout"><code style="text-decoration:none">QueryWithout</code><a href="#QueryWithout" class="hash-link" aria-label="Direct link to QueryWithout" title="Direct link to QueryWithout">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L273"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">QueryWithout</code><code>(</code><div class="inset_uKQm"><div><code>withoutList<!-- -->: </code><code class="purple_ieR2">{</code><code class="blue_P4bS">string</code><code class="purple_ieR2">}</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>Components it <strong>must not</strong> have</p>
+</span></span></div><div><code>...<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+<p>Names of components</p>
+</span></span></div></div><code>) → </code><code>(</code><div class="inset_uKQm"><div><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>ID of Entity</p>
+</span></span></div><div><code class="blue_P4bS">...</code><code class="blue_P4bS">any</code><span class="inlineDescription_G7Er">-- <span>
+<p>Value it has with the given components</p>
+</span></span></div></div><code>)</code></div><div>
+<p>
+  <strong>Used in <em>for</em> loops.</strong> Returns the ID and Value they have with the given components in the second argument, if they contain a component
+  that is in the given array, then they are skipped over and not returned.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="QueryWith"><code style="text-decoration:none">QueryWith</code><a href="#QueryWith" class="hash-link" aria-label="Direct link to QueryWith" title="Direct link to QueryWith">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L322"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">QueryWith</code><code>(</code><div class="inset_uKQm"><div><code>withList<!-- -->: </code><code class="purple_ieR2">{</code><code class="blue_P4bS">string</code><code class="purple_ieR2">}</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>Components it <strong>must</strong> have</p>
+</span></span></div><div><code>...<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+<p>Names of components</p>
+</span></span></div></div><code>) → </code><code>(</code><div class="inset_uKQm"><div><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>ID of Entity</p>
+</span></span></div><div><code class="blue_P4bS">...</code><code class="blue_P4bS">any</code><span class="inlineDescription_G7Er">-- <span>
+<p>Value it has with the given components</p>
+</span></span></div></div><code>)</code></div><div>
+<p>
+  <strong>Used in <em>for</em> loops.</strong> Returns the ID and Value the entity has with the given components in the second argument.
+  Entities must have the component given in the first argument.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Query"><code style="text-decoration:none">Query</code><a href="#Query" class="hash-link" aria-label="Direct link to Query" title="Direct link to Query">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L384"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">Query</code><code>(</code><div class="inset_uKQm"><div><code>...<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+<p>Names of components</p>
+</span></span></div></div><code>) → </code><code>(</code><div class="inset_uKQm"><div><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>ID of Entity</p>
+</span></span></div><div><code class="blue_P4bS">...any</code><span class="inlineDescription_G7Er">-- <span>
+<p>Value it has with the given components</p>
+</span></span></div></div><code>)</code></div><div>
+<p><strong>Used in <em>for</em> loops.</strong> Returns the ID and the value it currently has with the given components.</p>
+<pre class="language-lua"><code class="language-lua">ECS<span class="token punctuation">.</span><span class="token function">CreateComponent</span><span class="token punctuation">(</span><span class="token string">"Test1"</span><span class="token punctuation">,</span> <span class="token number">100</span><span class="token punctuation">)</span>
+ECS<span class="token punctuation">.</span><span class="token function">CreateComponent</span><span class="token punctuation">(</span><span class="token string">"Test2"</span><span class="token punctuation">,</span> <span class="token keyword">true</span><span class="token punctuation">)</span>
+ECS<span class="token punctuation">.</span><span class="token function">NewEntity</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+ECS<span class="token punctuation">.</span><span class="token function">NewEntity</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> id <span class="token operator">=</span> ECS<span class="token punctuation">.</span><span class="token function">NewEntity</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+ECS<span class="token punctuation">.</span><span class="token function">GiveComponent</span><span class="token punctuation">(</span>id<span class="token punctuation">,</span> <span class="token string">"Test1"</span><span class="token punctuation">)</span>
+
+<span class="token keyword">for</span> i<span class="token punctuation">,</span> v <span class="token keyword">in</span> ECS<span class="token punctuation">.</span><span class="token function">Query</span><span class="token punctuation">(</span><span class="token string">"Test1"</span><span class="token punctuation">)</span>
+	<span class="token function">print</span><span class="token punctuation">(</span>i<span class="token punctuation">,</span> v<span class="token punctuation">)</span> <span class="token comment">-- 3 100</span>
+	<span class="token comment">-- Only the third entity is looped over</span>
+<span class="token keyword">end</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="NewEntity"><code style="text-decoration:none">NewEntity</code><a href="#NewEntity" class="hash-link" aria-label="Direct link to NewEntity" title="Direct link to NewEntity">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L427"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">NewEntity</code><code>(</code><code>instance<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/datatype/Instance" target="_blank" rel="noopener noreferrer">Instance?<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><code>) → </code><code>(</code><div class="inset_uKQm"><div><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>The ID of the Entity</p>
+</span></span></div><div><code class="blue_P4bS">Entity</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/datatype/Instance" target="_blank" rel="noopener noreferrer">Instance<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><code class="op_lSLc">&gt;</code><span class="inlineDescription_G7Er">-- <span>
+<p>The Entity table</p>
+</span></span></div></div><code>)</code></div><div>
+<p>Creates a new entity and returns the ID and Entity type, optional instance to bind it to.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="BulkNewEntities"><code style="text-decoration:none">BulkNewEntities</code><a href="#BulkNewEntities" class="hash-link" aria-label="Direct link to BulkNewEntities" title="Direct link to BulkNewEntities">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L465"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">BulkNewEntities</code><code>(</code><div class="inset_uKQm"><div><code>n<!-- -->: </code><code class="blue_P4bS">number?</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>Defaults to 1</p>
+</span></span></div><div><code>instanceArray<!-- -->: </code><code class="purple_ieR2">{</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/datatype/Instance" target="_blank" rel="noopener noreferrer">Instance<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><code class="purple_ieR2">}</code><code class="blue_P4bS">?</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>Priority over n</p>
+</span></span></div><div><code>...<!-- -->: </code><code class="blue_P4bS">string?</code><span class="inlineDescription_G7Er">-- <span>
+<p>Components to be given upon creation</p>
+</span></span></div></div><code>) → </code><code class="purple_ieR2">{</code><code class="blue_P4bS">number</code><code class="purple_ieR2">}</code><span class="inlineDescription_G7Er">-- <span>
+<p>List of IDs of the entities created</p>
+</span></span></div><div>
+<p>
+  Creates multiple entities at once, if instanceArray is nil, n is used, if both are
+  nil, only one entity is created and returned, ... is the names of the components
+  that are given when creating the entities.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="BindToInstance"><code style="text-decoration:none">BindToInstance</code><a href="#BindToInstance" class="hash-link" aria-label="Direct link to BindToInstance" title="Direct link to BindToInstance">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L555"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">BindToInstance</code><code>(</code><div class="inset_uKQm"><div><code>id<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>Entity ID</p>
+</span></span></div><div><code>instance<!-- -->: </code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/datatype/Instance" target="_blank" rel="noopener noreferrer">Instance?<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><span class="inlineDescription_G7Er">-- <span>
+<p>Instance to bind to, nil if unbinding</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Binds an entity to an instance, if no instance is provided then
+  the current instance binded to the entity is unbinded from it.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetEntity"><code style="text-decoration:none">GetEntity</code><a href="#GetEntity" class="hash-link" aria-label="Direct link to GetEntity" title="Direct link to GetEntity">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L580"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">GetEntity</code><code>(</code><div class="inset_uKQm"><div><code>id<!-- -->: </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>ID of Entity</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">Entity</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS"><a style="text-decoration:underline;color:inherit" href="https://developer.roblox.com/en-us/api-reference/datatype/Instance" target="_blank" rel="noopener noreferrer">Instance<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound" style="color:gray;vertical-align:middle;margin-left:2px"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></code><code class="op_lSLc">&gt;</code></div><div>
+<p>Returns the Entity type</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="RemoveEntity"><code style="text-decoration:none">RemoveEntity</code><a href="#RemoveEntity" class="hash-link" aria-label="Direct link to RemoveEntity" title="Direct link to RemoveEntity">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L589"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">RemoveEntity</code><code>(</code><div class="inset_uKQm"><div><code>id<!-- -->: </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>ID of Entity</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>Removes an entity</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="ClearAllEntities"><code style="text-decoration:none">ClearAllEntities</code><a href="#ClearAllEntities" class="hash-link" aria-label="Direct link to ClearAllEntities" title="Direct link to ClearAllEntities">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L611"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">ClearAllEntities</code><code>(</code><code>) → </code><code>(</code><code>)</code></div><div>
+<p>Removes all the existing entities</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="CreateComponent"><code style="text-decoration:none">CreateComponent</code><a href="#CreateComponent" class="hash-link" aria-label="Direct link to CreateComponent" title="Direct link to CreateComponent">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L645"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">CreateComponent</code><code>(</code><div class="inset_uKQm"><div><code>name<!-- -->: </code><code class="blue_P4bS">string</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>Name of component</p>
+</span></span></div><div><code>value<!-- -->: </code><code class="blue_P4bS">T</code><span class="inlineDescription_G7Er">-- <span>
+<p>Default value for the component</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Creates a new component with value T, the value given to it will be the default that is
+  assigned to entities whenever they are given the component.
+</p>
+<pre class="language-lua"><code class="language-lua">ECS<span class="token punctuation">.</span><span class="token function">CreateComponent</span><span class="token punctuation">(</span><span class="token string">"Test"</span><span class="token punctuation">,</span> <span class="token number">1000</span><span class="token punctuation">)</span> <span class="token comment">-- 1000 is the default value</span>
+ECS<span class="token punctuation">.</span><span class="token function">NewEntity</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> component <span class="token operator">=</span> ECS<span class="token punctuation">.</span><span class="token function">GiveComponent</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token string">"Test"</span><span class="token punctuation">)</span>
+<span class="token function">print</span><span class="token punctuation">(</span>component<span class="token punctuation">.</span>Value<span class="token punctuation">)</span> <span class="token comment">-- 1000</span>
+</code></pre>
+
+  
+    
+    
+      <div class="admonition admonition-caution alert alert--warning">
+        <div class="admonition-heading">
+          <h5><span class="admonition-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                <path d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path>
+              </svg></span><span class="admonition-title">Invalid Values</span></h5>
+        </div>
+        <div class="admonition-content">
+          <p>
+            <code>table</code>, <code>thread</code>, <code>userdata</code>, and <code>function</code> will cause the function to error, these types are not allowed
+            to be used for the value of the component.
+          </p>
+        </div>
+      </div>
+    
+  
+
+</div><h3>Errors</h3><table class="errorTable_jfN8"><thead><tr><th>Type</th><th>Description</th></tr></thead><tbody><tr><td>&quot;Invalid value&quot;</td><td>Value given is an invalid value</td></tr><tr><td>&quot;Exceeded maximum&quot;</td><td>There is a maximum of 32 components that can be created</td></tr></tbody></table><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="DestroyComponent"><code style="text-decoration:none">DestroyComponent</code><a href="#DestroyComponent" class="hash-link" aria-label="Direct link to DestroyComponent" title="Direct link to DestroyComponent">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L680"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">DestroyComponent</code><code>(</code><div class="inset_uKQm"><div><code>name<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+<p>Name of component</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Destroys the component, entities with this component will have it removed, frees up space for
+  the creation of another component.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="RemoveComponent"><code style="text-decoration:none">RemoveComponent</code><a href="#RemoveComponent" class="hash-link" aria-label="Direct link to RemoveComponent" title="Direct link to RemoveComponent">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L700"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">RemoveComponent</code><code>(</code><div class="inset_uKQm"><div><code>id<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>Remove component from an entity</p>
+</span></span></div><div><code>name<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+<p>Name of component to remove</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>Removes a component from a given entity.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GiveComponent"><code style="text-decoration:none">GiveComponent</code><a href="#GiveComponent" class="hash-link" aria-label="Direct link to GiveComponent" title="Direct link to GiveComponent">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L718"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">GiveComponent</code><code>(</code><div class="inset_uKQm"><div><code>id<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>ID of Entity</p>
+</span></span></div><div><code>name<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+<p>Name of component to give</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">Component</code><code class="op_lSLc">&lt;</code><code class="blue_P4bS">T</code><code class="op_lSLc">&gt;</code></div><div>
+<p>Gives the component to the given entity, returns the component</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="HasComponent"><code style="text-decoration:none">HasComponent</code><a href="#HasComponent" class="hash-link" aria-label="Direct link to HasComponent" title="Direct link to HasComponent">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="/blob/master/src/server/RomalECS.luau#L757"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>ECS<!-- -->.</code><code class="green_DgR4">HasComponent</code><code>(</code><div class="inset_uKQm"><div><code>id<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>ID of entity</p>
+</span></span></div><div><code>name<!-- -->: </code><code class="blue_P4bS">string</code><span class="inlineDescription_G7Er">-- <span>
+<p>Name of component</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">boolean</code></div><div>
+<p>Checks if the given entity has the specified component.</p>
+</div></div></article></div><details><summary>Show raw api</summary><pre style="max-width:100%;white-space:pre-wrap">{
+    &quot;functions&quot;: [
+        {
+            &quot;name&quot;: &quot;QueryWithout&quot;,
+            &quot;desc&quot;: &quot;**Used in _for_ loops.** Returns the ID and Value they have with the given components in the second argument, if they contain a component\nthat is in the given array, then they are skipped over and not returned.&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;withoutList&quot;,
+                    &quot;desc&quot;: &quot;Components it **must not** have&quot;,
+                    &quot;lua_type&quot;: &quot;{string}&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;...&quot;,
+                    &quot;desc&quot;: &quot;Names of components&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;ID of Entity&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;desc&quot;: &quot;Value it has with the given components&quot;,
+                    &quot;lua_type&quot;: &quot;... any&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 273,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;QueryWith&quot;,
+            &quot;desc&quot;: &quot;**Used in _for_ loops.** Returns the ID and Value the entity has with the given components in the second argument.\nEntities must have the component given in the first argument.&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;withList&quot;,
+                    &quot;desc&quot;: &quot;Components it **must** have&quot;,
+                    &quot;lua_type&quot;: &quot;{string}&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;...&quot;,
+                    &quot;desc&quot;: &quot;Names of components&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;ID of Entity&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;desc&quot;: &quot;Value it has with the given components&quot;,
+                    &quot;lua_type&quot;: &quot;... any&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 322,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Query&quot;,
+            &quot;desc&quot;: &quot;**Used in _for_ loops.** Returns the ID and the value it currently has with the given components.\n\n```lua\nECS.CreateComponent(\&quot;Test1\&quot;, 100)\nECS.CreateComponent(\&quot;Test2\&quot;, true)\nECS.NewEntity()\nECS.NewEntity()\n\nlocal id = ECS.NewEntity()\n\nECS.GiveComponent(id, \&quot;Test1\&quot;)\n\nfor i, v in ECS.Query(\&quot;Test1\&quot;)\n\tprint(i, v) -- 3 100\n\t-- Only the third entity is looped over\nend\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;...&quot;,
+                    &quot;desc&quot;: &quot;Names of components&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;ID of Entity&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;desc&quot;: &quot;Value it has with the given components&quot;,
+                    &quot;lua_type&quot;: &quot;...any&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 384,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;NewEntity&quot;,
+            &quot;desc&quot;: &quot;Creates a new entity and returns the ID and Entity type, optional instance to bind it to.&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;instance&quot;,
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;Instance?&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;The ID of the Entity&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;desc&quot;: &quot;The Entity table&quot;,
+                    &quot;lua_type&quot;: &quot;Entity&lt;Instance&gt;&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 427,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;BulkNewEntities&quot;,
+            &quot;desc&quot;: &quot;Creates multiple entities at once, if instanceArray is nil, n is used, if both are\nnil, only one entity is created and returned, ... is the names of the components\nthat are given when creating the entities.&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;n&quot;,
+                    &quot;desc&quot;: &quot;Defaults to 1&quot;,
+                    &quot;lua_type&quot;: &quot;number?&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;instanceArray&quot;,
+                    &quot;desc&quot;: &quot;Priority over n&quot;,
+                    &quot;lua_type&quot;: &quot;{Instance}?&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;...&quot;,
+                    &quot;desc&quot;: &quot;Components to be given upon creation&quot;,
+                    &quot;lua_type&quot;: &quot;string?&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;List of IDs of the entities created&quot;,
+                    &quot;lua_type&quot;: &quot;{number}&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 465,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;BindToInstance&quot;,
+            &quot;desc&quot;: &quot;Binds an entity to an instance, if no instance is provided then\nthe current instance binded to the entity is unbinded from it.&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;id&quot;,
+                    &quot;desc&quot;: &quot;Entity ID&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;instance&quot;,
+                    &quot;desc&quot;: &quot;Instance to bind to, nil if unbinding&quot;,
+                    &quot;lua_type&quot;: &quot;Instance?&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 555,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GetEntity&quot;,
+            &quot;desc&quot;: &quot;Returns the Entity type&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;id&quot;,
+                    &quot;desc&quot;: &quot;ID of Entity&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;Entity&lt;Instance&gt;&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 580,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;RemoveEntity&quot;,
+            &quot;desc&quot;: &quot;Removes an entity&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;id&quot;,
+                    &quot;desc&quot;: &quot;ID of Entity&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 589,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;ClearAllEntities&quot;,
+            &quot;desc&quot;: &quot;Removes all the existing entities&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 611,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;CreateComponent&quot;,
+            &quot;desc&quot;: &quot;Creates a new component with value T, the value given to it will be the default that is\nassigned to entities whenever they are given the component.\n\n\n```lua\nECS.CreateComponent(\&quot;Test\&quot;, 1000) -- 1000 is the default value\nECS.NewEntity()\n\nlocal component = ECS.GiveComponent(1, \&quot;Test\&quot;)\nprint(component.Value) -- 1000\n```\n\n:::caution Invalid Values\n`table`, `thread`, `userdata`, and `function` will cause the function to error, these types are not allowed\nto be used for the value of the component.\n:::&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;name&quot;,
+                    &quot;desc&quot;: &quot;Name of component&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;value&quot;,
+                    &quot;desc&quot;: &quot;Default value for the component&quot;,
+                    &quot;lua_type&quot;: &quot;T&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;errors&quot;: [
+                {
+                    &quot;lua_type&quot;: &quot;\&quot;Invalid value\&quot;&quot;,
+                    &quot;desc&quot;: &quot;Value given is an invalid value&quot;
+                },
+                {
+                    &quot;lua_type&quot;: &quot;\&quot;Exceeded maximum\&quot;&quot;,
+                    &quot;desc&quot;: &quot;There is a maximum of 32 components that can be created&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 645,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;DestroyComponent&quot;,
+            &quot;desc&quot;: &quot;Destroys the component, entities with this component will have it removed, frees up space for\nthe creation of another component.&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;name&quot;,
+                    &quot;desc&quot;: &quot;Name of component&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 680,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;RemoveComponent&quot;,
+            &quot;desc&quot;: &quot;Removes a component from a given entity.&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;id&quot;,
+                    &quot;desc&quot;: &quot;Remove component from an entity&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;name&quot;,
+                    &quot;desc&quot;: &quot;Name of component to remove&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 700,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GiveComponent&quot;,
+            &quot;desc&quot;: &quot;Gives the component to the given entity, returns the component&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;id&quot;,
+                    &quot;desc&quot;: &quot;ID of Entity&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;name&quot;,
+                    &quot;desc&quot;: &quot;Name of component to give&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;Component&lt;T&gt;&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 718,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;HasComponent&quot;,
+            &quot;desc&quot;: &quot;Checks if the given entity has the specified component.&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;id&quot;,
+                    &quot;desc&quot;: &quot;ID of entity&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;name&quot;,
+                    &quot;desc&quot;: &quot;Name of component&quot;,
+                    &quot;lua_type&quot;: &quot;string&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;boolean&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 757,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        }
+    ],
+    &quot;properties&quot;: [
+        {
+            &quot;name&quot;: &quot;_ENTITY_TAG_NAME&quot;,
+            &quot;desc&quot;: &quot;Name of the CollectionService tag given to instances bound to an entity.&quot;,
+            &quot;lua_type&quot;: &quot;string&quot;,
+            &quot;readonly&quot;: true,
+            &quot;source&quot;: {
+                &quot;line&quot;: 244,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;_ENTITY_ID_STRING&quot;,
+            &quot;desc&quot;: &quot;Name of the attribute given to instances bound to an entity. The attribute holds the ID of the entity.&quot;,
+            &quot;lua_type&quot;: &quot;string&quot;,
+            &quot;readonly&quot;: true,
+            &quot;source&quot;: {
+                &quot;line&quot;: 252,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        }
+    ],
+    &quot;types&quot;: [
+        {
+            &quot;name&quot;: &quot;Connection&quot;,
+            &quot;desc&quot;: &quot;&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;Disconnect&quot;,
+                    &quot;lua_type&quot;: &quot;() -&gt; ()&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 169,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Event&lt;T&gt;&quot;,
+            &quot;desc&quot;: &quot;&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;Connect&quot;,
+                    &quot;lua_type&quot;: &quot;(T) -&gt; Connection&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Once&quot;,
+                    &quot;lua_type&quot;: &quot;(T) -&gt; Connection&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 176,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Component&lt;T&gt;&quot;,
+            &quot;desc&quot;: &quot;ComponentChanged is read only, Value can be written to.\n\n```lua\nECS.CreateComponent(\&quot;Test\&quot;, 100)\nECS.NewEntity()\n\nlocal component = ECS.GiveComponent(1, \&quot;Test\&quot;)\n\ncomponent.ComponentChanged:Connect(function(newValue)\n\tprint(newValue) -- Prints 300\nend)\n\ncomponent.Value = 300\n```\n\nYou are able to get intellisense by casting the type.\n\n```lua\nECS.CreateComponent(\&quot;Intellisense\&quot;, true)\nECS.NewEntity()\n\nlocal component = ECS.GiveComponent(1, \&quot;Intellisense\&quot;) :: ECS.Component&lt;boolean&gt;\n\ncomponent.Value = false -- Valid\ncomponent.Value = 100 -- Type error\n```\n\nYou will get an error if you attempt to run the following code.\n\n```lua\nECS.CreateComponent(\&quot;Errors\&quot;, 0)\nECS.NewEntity()\n\nlocal component = ECS.GiveComponent(1, \&quot;Errors\&quot;)\n\ncomponent.ComponentChanged = \&quot;foo\&quot; -- Error\ncomponent.NewKey = \&quot;bar\&quot; -- Error\nprint(component.RealValue) -- Error\n```&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;Value&quot;,
+                    &quot;lua_type&quot;: &quot;T&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;ComponentChanged&quot;,
+                    &quot;lua_type&quot;: &quot;Event&lt;T&gt;&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 224,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Entity&lt;T&gt;&quot;,
+            &quot;desc&quot;: &quot;An entity table, ComponentAdded and ComponentRemoved return the name of the component\nthat was removed when calling functions connected to them. All of these values are read only.&quot;,
+            &quot;fields&quot;: [
+                {
+                    &quot;name&quot;: &quot;Components&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;Instance&quot;,
+                    &quot;lua_type&quot;: &quot;T?&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;ComponentAdded&quot;,
+                    &quot;lua_type&quot;: &quot;Event&lt;string&gt;&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;ComponentRemoved&quot;,
+                    &quot;lua_type&quot;: &quot;Event&lt;string&gt;&quot;,
+                    &quot;desc&quot;: &quot;&quot;
+                }
+            ],
+            &quot;source&quot;: {
+                &quot;line&quot;: 236,
+                &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+            }
+        }
+    ],
+    &quot;name&quot;: &quot;ECS&quot;,
+    &quot;desc&quot;: &quot;Romal&#x27;s ECS module. Adds support for the ECS paradigm. Provides most common ECS features such as being able to query\nentities.&quot;,
+    &quot;source&quot;: {
+        &quot;line&quot;: 259,
+        &quot;path&quot;: &quot;src/server/RomalECS.luau&quot;
+    }
+}</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#types" class="table-of-contents__link toc-highlight">Types</a><ul><li><a href="#Component&lt;T&gt;" class="table-of-contents__link toc-highlight">Component<t></t></a></li><li><a href="#Connection" class="table-of-contents__link toc-highlight">Connection</a></li><li><a href="#Entity&lt;T&gt;" class="table-of-contents__link toc-highlight">Entity<t></t></a></li><li><a href="#Event&lt;T&gt;" class="table-of-contents__link toc-highlight">Event<t></t></a></li></ul></li><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a><ul><li><a href="#_ENTITY_ID_STRING" class="table-of-contents__link toc-highlight">_ENTITY_ID_STRING</a></li><li><a href="#_ENTITY_TAG_NAME" class="table-of-contents__link toc-highlight">_ENTITY_TAG_NAME</a></li></ul></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#BindToInstance" class="table-of-contents__link toc-highlight">.BindToInstance</a></li><li><a href="#BulkNewEntities" class="table-of-contents__link toc-highlight">.BulkNewEntities</a></li><li><a href="#ClearAllEntities" class="table-of-contents__link toc-highlight">.ClearAllEntities</a></li><li><a href="#CreateComponent" class="table-of-contents__link toc-highlight">.CreateComponent</a></li><li><a href="#DestroyComponent" class="table-of-contents__link toc-highlight">.DestroyComponent</a></li><li><a href="#GetEntity" class="table-of-contents__link toc-highlight">.GetEntity</a></li><li><a href="#GiveComponent" class="table-of-contents__link toc-highlight">.GiveComponent</a></li><li><a href="#HasComponent" class="table-of-contents__link toc-highlight">.HasComponent</a></li><li><a href="#NewEntity" class="table-of-contents__link toc-highlight">.NewEntity</a></li><li><a href="#Query" class="table-of-contents__link toc-highlight">.Query</a></li><li><a href="#QueryWith" class="table-of-contents__link toc-highlight">.QueryWith</a></li><li><a href="#QueryWithout" class="table-of-contents__link toc-highlight">.QueryWithout</a></li><li><a href="#RemoveComponent" class="table-of-contents__link toc-highlight">.RemoveComponent</a></li><li><a href="#RemoveEntity" class="table-of-contents__link toc-highlight">.RemoveEntity</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 romalvardhn. Built with Moonwave and Docusaurus.</div></div></div></footer></div>
+</body>
+</html>
