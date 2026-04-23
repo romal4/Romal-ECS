@@ -433,7 +433,7 @@ function ECS.NewEntity(instance: Instance?) : (number, ReadOnly<Entity<Instance>
 	if instance then
 		instance:AddTag(ECS._ENTITY_TAG_NAME)
 		instance:SetAttribute(ECS._ENTITY_ID_STRING, ID)
-	end
+	end 
 	
 	return ID, entity :: any
 end
