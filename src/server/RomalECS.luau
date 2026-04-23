@@ -615,6 +615,14 @@ end
 	@error "Invalid value" -- Some values are not valid to be used when making a component
 	@error "Exceeded maximum" -- There is a maximum of 32 components that can be created
 
+	```lua
+	ECS.CreateComponent("Test", 1000) -- 1000 is the default value
+	ECS.NewEntity()
+
+	local component = ECS.GiveComponent(1, "Test")
+	print(component.Value) -- 1000
+	```
+
 	:::caution Invalid Values
 	**table**, **thread**, **userdata**, and **function** will cause the function to error, these types are not allowed
 	to be used for the value of the component
