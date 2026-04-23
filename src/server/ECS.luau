@@ -1,9 +1,5 @@
 --!optimize 2
 --!strict
-local ENTITY_TAG_NAME = "Entity"
-local ENTITY_ID_STRING = "EntityID"
--- Constants
-
 local freeIDs = table.create(100)
 local freeBits = table.create(32)
 local entityList: {InternalEntity<Instance>} = {}
@@ -26,6 +22,7 @@ type function ReadOnly(t, keys)
 	else
 
 		local readType = result:readproperty(keys)
+		
 		if readType then
 			result:setwriteproperty(keys, nil)
 		end
@@ -55,7 +52,7 @@ type InternalEntity<T> = {
 	ComponentRemoved: Signal,
 }
 
-type Entity<T> = {
+export type Entity<T> = {
 	Instance: T?,
 	Components: number,
 	ComponentAdded: Event<string>,
@@ -77,8 +74,11 @@ type Signal = {
 
 type ECS = {
 
-	QueryWithout: (withoutList: {string}, componentNameList: {string}) -> () -> (number, ...any),
-	QueryWith: (withList: {string}, componentNameList: {string}) -> () -> (number, ...any),
+	_ENTITY_TAG_NAME: string,
+	_ENTITY_ID_STRING: string,
+
+	QueryWithout: (withoutList: {string}, ...string) -> () -> (number, ...any),
+	QueryWith: (withList: {string}, ...string) -> () -> (number, ...any),
 	Query: (...string) -> () -> (number, ...any),
 	
 	NewEntity: (instance: Instance?) -> (number, ReadOnly<Entity<Instance>, "Components" | "ComponentAdded" | "ComponentRemoved" | "Instance">),
@@ -161,12 +161,106 @@ local function bulkEntityBitMask(id: number, name: string) : ()
 	
 end
 
-local ECS = {} :: ECS
+--[=[
+	@interface Connection
+	@within ECS
+	@field Disconnect () -> ()
+]=]
 
-function ECS.QueryWithout(withoutList: {string}, componentNameList: {string}) : () -> (number, ...any)
+--[=[
+	@interface Event<T>
+	@within ECS
+	@field Connect (T) -> Connection
+	@field Once (T) -> Connection
+]=]
+
+--[=[
+	@interface Component<T>
+	@within ECS
+	@field Value T
+	@field ComponentChanged Event<T>
+
+	ComponentChanged is read only, Value can be written to.
+
+	```lua
+	ECS.CreateComponent("Test", 100)
+	ECS.NewEntity()
+
+	local component = ECS.GiveComponent(1, "Test")
+
+	component.ComponentChanged:Connect(function(newValue)
+		print(newValue) -- Prints 300
+	end)
+
+	component.Value = 300
+	```
+
+	You are able to get intellisense by casting the type.
+
+	```lua
+	ECS.CreateComponent("Intellisense", true)
+	ECS.NewEntity()
+
+	local component = ECS.GiveComponent(1, "Intellisense") :: ECS.Component<boolean>
+
+	component.Value = false -- Valid
+	component.Value = 100 -- Type error
+	```
+]=]
+
+--[=[
+	@interface Entity<T>
+	@within ECS
+	@field Components number
+	@field Instance T?
+	@field ComponentAdded Event<string>
+	@field ComponentRemoved Event<string>
+
+	An entity table, ComponentAdded and ComponentRemoved return the name of the component
+	that was removed when calling functions connected to them. All of these values are read only.
+]=]
+
+--[=[
+	@prop _ENTITY_TAG_NAME string
+	@within ECS
+	@readonly
+
+	Name of the tag given to instances bound to an entity.
+]=]
+
+--[=[
+	@prop _ENTITY_ID_STRING string
+	@within ECS
+	@readonly
+
+	Name of the attribute given to instances bound to an entity. The attribute holds the ID of the entity.
+]=]
+
+--[=[
+	@class ECS
+
+	Romal's ECS module. Adds support for the ECS paradigm. Provides most common ECS features such as being able to query
+	entities.
+]=]
+local ECS = {
+	_ENTITY_TAG_NAME = "Entity",
+	_ENTITY_ID_STRING = "EntityID",
+} :: ECS
+
+--[=[
+	**Used in _for_ loops.** Returns the ID and Value they have with the given components in the second argument, if they contain a component
+	that is in the given array, then they are skipped over and not returned.
+
+	@param withoutList {string} -- Components it **must not** have
+	@param ... string -- Names of components
+	@return number -- ID of Entity
+	@return ... any -- Value it has with the given components
+]=]
+function ECS.QueryWithout(withoutList: {string}, ...: string) : () -> (number, ...any)
 	
 	local excludeMask = 0b0
 	local includeMask = 0b0
+	local componentNameList = {...}
 
 	for _, v in withoutList do
 		excludeMask = bit32.replace(excludeMask, 1, components[v]._bitPosition, 1)
@@ -202,9 +296,19 @@ function ECS.QueryWithout(withoutList: {string}, componentNameList: {string}) : 
 	end
 end
 
-function ECS.QueryWith(withList: {string}, componentNameList: {string}) : () -> (number, ...any)
+--[=[
+	**Used in _for_ loops.** Returns the ID and Value the entity has with the given components in the second argument.
+	Entities must have the component given in the first argument.
+
+	@param withList {string} -- Components it **must** have
+	@param ... string --Names of components
+	@return number -- ID of Entity
+	@return ... any -- Value it has with the given components
+]=]
+function ECS.QueryWith(withList: {string}, ...: string) : () -> (number, ...any)
 	
 	local mask = 0b0
+	local componentNameList = {...}
 
 	for _, v in componentNameList do
 		mask = bit32.replace(mask, 1, components[v]._bitPosition, 1)
@@ -240,6 +344,29 @@ function ECS.QueryWith(withList: {string}, componentNameList: {string}) : () -> 
 	end
 end
 
+--[=[
+	**Used in _for_ loops.** Returns the ID and the value it currently has with the given components.
+
+	```lua
+	ECS.CreateComponent("Test1", 100)
+	ECS.CreateComponent("Test2", true)
+	ECS.NewEntity()
+	ECS.NewEntity()
+
+	local id = ECS.NewEntity()
+
+	ECS.GiveComponent(id, "Test1")
+
+	for i, v in ECS.Query("Test1")
+		print(i, v) -- 3 100
+		-- Only the third entity is looped over
+	end
+	```
+
+	@param ... string -- Names of components
+	@return number -- ID of Entity
+	@return ...any -- Value it has with the given components
+]=]
 function ECS.Query(...: string) : () -> (number, ...any)
 
 	local componentNameList = {...}
@@ -275,6 +402,14 @@ function ECS.Query(...: string) : () -> (number, ...any)
 	end
 end
 
+--[=[
+
+	Creates a new entity and returns the ID and Entity type, optional instance to bind it to.
+
+	@param instance Instance?
+	@return number -- The ID of the Entity
+	@return Entity<Instance> -- The Entity table
+]=]
 function ECS.NewEntity(instance: Instance?) : (number, ReadOnly<Entity<Instance>, "Components">)
 	
 	local ID = 0
@@ -296,13 +431,23 @@ function ECS.NewEntity(instance: Instance?) : (number, ReadOnly<Entity<Instance>
 	local entity = entityList[ID] 
 
 	if instance then
-		instance:AddTag(ENTITY_TAG_NAME)
-		instance:SetAttribute(ENTITY_ID_STRING, ID)
+		instance:AddTag(ECS._ENTITY_TAG_NAME)
+		instance:SetAttribute(ECS._ENTITY_ID_STRING, ID)
 	end
 	
 	return ID, entity :: any
 end
 
+--[=[
+	Creates multiple entities at once, if instanceArray is nil, n is used, if both are
+	nil, only one entity is created and returned, ... is the names of the components
+	that are given when creating the entities.
+
+	@param n number? -- Defaults to 1
+	@param instanceArray {Instance}? -- Priority over n
+	@param ... string? -- Components to be given upon creation
+	@return {number} -- List of IDs of the entities created
+]=]
 function ECS.BulkNewEntities(n: number?, instanceArray: {Instance}?, ...:string?) : {number}
 
 	local componentNameList = {...} :: any
@@ -325,8 +470,8 @@ function ECS.BulkNewEntities(n: number?, instanceArray: {Instance}?, ...:string?
 				ID = entityCount
 			end
 
-			v:SetAttribute(ENTITY_ID_STRING, ID)
-			v:AddTag(ENTITY_TAG_NAME)
+			v:SetAttribute(ECS._ENTITY_ID_STRING, ID)
+			v:AddTag(ECS._ENTITY_TAG_NAME)
 			entityList[ID] = {
 				Instance = v,
 			 	Components = 0b0,
@@ -386,37 +531,54 @@ function ECS.BulkNewEntities(n: number?, instanceArray: {Instance}?, ...:string?
 	return entityReturnList
 end
 
+--[=[
+	Binds an entity to an instance, if no instance is provided then
+	the current instance binded to the entity is unbinded from it.
+
+	@param id number -- Entity ID
+	@param instance Instance? -- Instance to bind to, nil if unbinding
+]=]
 function ECS.BindToInstance(id: number, instance: Instance?) : ()
 
 	local entity = entityList[id]
 	local oldInstance = entity.Instance :: Instance?
 
 	if oldInstance then
-		oldInstance:SetAttribute(ENTITY_ID_STRING, nil)
-		oldInstance:RemoveTag(ENTITY_TAG_NAME)
-		entity.Instance = nil
+		oldInstance:SetAttribute(ECS._ENTITY_ID_STRING, nil)
+		oldInstance:RemoveTag(ECS._ENTITY_TAG_NAME)
 	end
 
 	if instance then
-		instance:SetAttribute(ENTITY_ID_STRING, id)
-		instance:AddTag(ENTITY_TAG_NAME)
+		instance:SetAttribute(ECS._ENTITY_ID_STRING, id)
+		instance:AddTag(ECS._ENTITY_TAG_NAME)
 	end
 
 	entity.Instance = instance
 
 end
 
+--[=[
+	Returns the Entity type
+
+	@param id number -- ID of Entity
+	@return Entity<Instance>
+]=]
 function ECS.GetEntity(id: number) : ReadOnly<Entity<Instance>, "Components">
 	return entityList[id] :: any
 end
 
+--[=[
+	Removes an entity
+
+	@param id number -- ID of Entity
+]=]
 function ECS.RemoveEntity(id: number) : ()
 
 	local instance = entityList[id].Instance
 
 	if instance then
-		instance:RemoveTag(ENTITY_TAG_NAME)
-		instance:SetAttribute(ENTITY_ID_STRING, nil)
+		instance:RemoveTag(ECS._ENTITY_TAG_NAME)
+		instance:SetAttribute(ECS._ENTITY_ID_STRING, nil)
 	end
 
 	entityList[id] = nil
@@ -429,6 +591,9 @@ function ECS.RemoveEntity(id: number) : ()
 
 end
 
+--[=[
+	Removes all the existing entities
+]=]
 function ECS.ClearAllEntities() : ()
 
 	for i, v in components do
@@ -441,6 +606,20 @@ function ECS.ClearAllEntities() : ()
 	
 end
 
+--[=[
+	Creates a new component with value T, the value given to it will be the default that is
+	assigned to entities whenever they are given the component
+
+	@param name string -- Name of component
+	@param value T -- Default value for the component
+	@error "Invalid value" -- Some values are not valid to be used when making a component
+	@error "Exceeded maximum" -- There is a maximum of 32 components that can be created
+
+	:::caution Invalid Values
+	**table**, **thread**, **userdata**, and **function** will cause the function to error, these types are not allowed
+	to be used for the value of the component
+	:::
+]=]
 function ECS.CreateComponent<T>(name: string, value: T) : ()
 
 	if componentCount >= 32 then
@@ -451,7 +630,7 @@ function ECS.CreateComponent<T>(name: string, value: T) : ()
 
 	local valueType = typeof(value)
 
-	if valueType == "table" or valueType == "thread" or valueType == "function" then
+	if valueType == "table" or valueType == "thread" or valueType == "function" or valueType == "userdata" then
 		error(`{valueType} is not a valid component value`)
 	end
 
@@ -470,6 +649,12 @@ function ECS.CreateComponent<T>(name: string, value: T) : ()
 	end
 end
 
+--[=[
+	Destroys the component, entities with this component will have it removed, frees up space for
+	the creation of another component.
+
+	@param name string -- Name of component
+]=]
 function ECS.DestroyComponent(name: string) : ()
 
 	local bitPos = components[name]._bitPosition
@@ -484,21 +669,36 @@ function ECS.DestroyComponent(name: string) : ()
 
 end
 
+--[=[
+	Removes a component from a given entity.
+
+	@param id number -- Remove component from an entity
+	@param name string -- Name of component to remove
+]=]
 function ECS.RemoveComponent(id: number, name: string) : ()
 	
 	local entity = entityList[id]
+	local comp = components[name]
 
-	entity.Components = bit32.replace(entity.Components, 0, components[name]._bitPosition, 1)
-	components[name].EntityValues[id] = nil
+	entity.Components = bit32.replace(entity.Components, 0, comp._bitPosition, 1)
+	comp.EntityValues[id] = nil
 	entity.ComponentRemoved:Fire(name)
 
 end
 
+--[=[
+	Gives the component to the given entity, returns the component
+
+	@param id number -- ID of Entity
+	@param name string -- Name of component to give
+	@return Component<T>
+]=]
 function ECS.GiveComponent<T>(id: number, name: string) : Component<T>
 
 	local comp = components[name]
 	local entity = entityList[id]
-	local internal = {Value = comp._template}
+	local template = comp._template
+	local internal = {Value = template}
 	local newSignal = signal.new()
 	local userdata = newproxy(true)
 	local mt = getmetatable(userdata)
@@ -525,6 +725,13 @@ function ECS.GiveComponent<T>(id: number, name: string) : Component<T>
 	return userdata :: Component<T>
 end
 
+--[=[
+	Checks if the given entity has the specified component.
+
+	@param id number -- ID of entity
+	@param name string -- Name of component
+	@return boolean
+]=]
 function ECS.HasComponent(id: number, name: string) : boolean
 	return bit32.extract(entityList[id].Components, components[name]._bitPosition, 1) == 1
 end
