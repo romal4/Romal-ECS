@@ -16,4 +16,3 @@ Romal's ECS is a strictly typed module for scripting systems that make use of en
 1. Download the latest release
 2. Place the module in `ServerScriptService` or any folder under that Service
 3. Require the module in your server sided scripts
-
