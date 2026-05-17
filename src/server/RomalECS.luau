@@ -1,35 +1,23 @@
 --!optimize 2
 --!strict
-local freeIDs = table.create(100)
-local freeBits = table.create(32)
+local freeIndexes: {number} = {}
+local freeIDs = table.create(100) :: {number}
+local freeBits = table.create(32) :: {number}
 local entityList: {InternalEntity<Instance>} = {}
 local components = {} :: {[string]: ComponentTable<any>}
+local componentValueList: {{any}} = {}
+local threads: {() -> ()} = {}
+local deferredThreads: {() -> ()} = {}
+local listenerCount: {number} = {}
+local deferredListenerCount: {number} = {}
 local componentCount = 0
 local nextBitPos = 0
 local entityCount = 0
 
-type function ReadOnly(t, keys)
-
-	local result = types.copy(t)
-
-	if keys:is("union") then
-		for _, k in keys:components() do
-			local readType = result:readproperty(k)
-			if readType then
-				result:setwriteproperty(k, nil)
-			end
-		end
-	else
-
-		local readType = result:readproperty(keys)
-		
-		if readType then
-			result:setwriteproperty(keys, nil)
-		end
-	end
-	
-	return result
-end
+type InternalConnection = {
+	__index: InternalConnection,
+	Disconnect: (self: Connection) -> (),
+}
 
 type Connection = {
 	Disconnect: (self: Connection) -> (),
@@ -38,6 +26,7 @@ type Connection = {
 type Event<T> = {
 	Connect: (self: Event<T>, f: (T) -> ()) -> Connection,
 	Once: (self: Event<T>, f: (T) -> ()) -> Connection,
+	Wait: <T>(self: Event<T>) -> T,
 }
 
 export type Component<T> = {
@@ -65,61 +54,332 @@ type ComponentTable<T> = {
 	EntityValues: {Component<any>}
 }
 
-type Signal = {
-	_listeners: {[(...any) -> ()]: boolean} ,
+type SignalMetatable = {
+	__index: SignalMetatable,
 	Fire: (self: Signal, ...any) -> (),
 	Connect: (self: Signal, f: (...any) -> ()) -> Connection,
+	ConnectDeferred: (self: Signal, f: (...any) -> ()) -> Connection,
 	Once: (self: Signal, f: (...any) -> ()) -> Connection,
+	Wait: <T>(self: Signal) -> T,
 }
+
+type Signal = setmetatable<{number}, SignalMetatable>
+
+type InternalIterator = {
+	List: {number},
+	ComponentList: {string},
+}
+
+type IteratorMetatable = {
+	__index: IteratorMetatable,
+	__iter: (t: InternalIterator) -> () -> (number, ...any),
+	With: (self: InternalIterator, ...string) -> Iterator,
+	Without: (self: InternalIterator, ...string) -> Iterator,
+}
+
+type Iterator = {
+	With: (self: Iterator, ...string) -> Iterator,
+	Without: (self: Iterator, ...string) -> Iterator,
+}
+
+type EntitySingleton = "Components" | "Instance"
 
 type ECS = {
 
 	_ENTITY_TAG_NAME: string,
 	_ENTITY_ID_STRING: string,
 
-	QueryWithout: (withoutList: {string}, ...string) -> () -> (number, ...any),
-	QueryWith: (withList: {string}, ...string) -> () -> (number, ...any),
-	Query: (...string) -> () -> (number, ...any),
+	Query: (...string) -> Iterator,
 	
-	NewEntity: (instance: Instance?) -> (number, ReadOnly<Entity<Instance>, "Components" | "ComponentAdded" | "ComponentRemoved" | "Instance">),
+	NewEntity: (instance: Instance?) -> (number, Entity<Instance>),
 	BulkNewEntities: (n: number?, instanceList: {Instance}?, ...string?) -> {number},
 	BindToInstance: (id: number, instance: Instance) -> (),
-	GetEntity: (id: number) -> ReadOnly<Entity<Instance>, "Components" | "ComponentAdded" | "ComponentRemoved" | "Instance">,
+	GetEntity: (id: number) -> Entity<Instance>,
 	RemoveEntity: (id: number) -> (),
 	ClearAllEntities: () -> (),
+	GetAllIDs: () -> {number},
 	
 	CreateComponent: <T>(name: string, value: T) -> (),
 	DestroyComponent: (name: string) -> (),
 	RemoveComponent: (id: number, name: string) -> (),
-	GiveComponent: <T>(id: number, componentName: string) -> Component<T>,
+	GiveComponent: <T>(id: number, componentName: string, defaultInstance: Instance?) -> Component<T>,
 	HasComponent: (id: number, name: string) -> boolean,
 
 }
+
+--[=[
+	Iterator class returned by the Query() function
+
+	@class Iterator
+]=]
+
+local iterator = {} :: IteratorMetatable
+iterator.__index = iterator
+iterator.__iter = function(t: InternalIterator) : () -> (number, ...any)
+
+	local index: number
+
+	return function()
+
+		const newIndex, id = next(t.List, index)
+
+		if id == nil then return nil :: any end
+		index = newIndex :: number
+
+		const returnTable = table.create(#t.ComponentList + 1) :: {number}
+		returnTable[1] = id
+	
+		for _, v in t.ComponentList do
+			table.insert(returnTable, components[v].EntityValues[id].Value)
+		end
+
+		return table.unpack(returnTable)
+	end
+end
+
+--[=[
+	Only iterates over entities with the specified components.
+
+	```lua
+	ECS.GiveComponent(1, "A")
+	ECS.GiveComponent(2, "B")
+	ECS.GiveComponent(3, "A")
+	-- Assuming they all have a "C" Component with a bool value
+
+	for id, value in ECS.Query("C"):With("A") do
+		print(id, value)
+		-- 1 true
+		-- 3 true
+		-- Entity 2 is skipped as it does not have "A" Component
+	end
+	```
+
+	@method With
+	@within Iterator
+	@param ... string -- Names of components
+	@return Iterator
+]=]
+function iterator.With(self: InternalIterator, ...: string) : Iterator
+	
+	local mask = 0b0
+
+	const reference = self.List
+	const componentNameList = {...}
+
+	for _, v in componentNameList do
+		mask = bit32.replace(mask, 1, components[v]._bitPosition)
+	end
+
+	for i, v in reference do
+		if bit32.band(mask, entityList[v].Components) ~= mask then
+			reference[i] = nil
+		end
+	end
+
+	return self :: any
+end
+
+--[=[
+	Only iterates over entities that do not have the specified components.
+
+	```lua
+	ECS.GiveComponent(1, "A")
+	ECS.GiveComponent(2, "B")
+	ECS.GiveComponent(3, "A")
+	-- Assume they all have a "C" Component with a bool value
+
+	for id, value in ECS.Query("C"):Without("A") do
+		print(id, value)
+		-- 2 true
+		-- Entities 1 and 3 are skipped as they have the "A" Component
+	end
+	```
+
+	@method Without
+	@within Iterator
+	@param ... string -- Names of components
+	@return Iterator
+]=]
+function iterator.Without(self: InternalIterator, ...: string) : Iterator
+
+	local mask = 0b0
+
+	const reference = self.List
+	const componentNameList = {...}
+
+	for _, v in componentNameList do
+		mask = bit32.replace(mask, 1, components[v]._bitPosition)
+	end
+
+	for i, v in reference do
+		if bit32.band(mask, entityList[v].Components) ~= 0 then
+			reference[i] = nil
+		end
+	end
+	
+	return self :: any
+end
+
+--[=[
+	Type returned by calling the methods of Event<T>.
+
+	@class Connection
+]=]
+local connection = {} :: InternalConnection
+connection.__index = connection
+
+--[=[
+	Disconnects a function from an event.
+
+	@method Disconnect
+	@within Connection
+]=]
+function connection.Disconnect(self: Connection) : ()
+
+	const index = (self :: any)[1]
+	const originalSignal = (self :: any)[2]
+	const pos = table.find(originalSignal, index)
+
+	if pos then table.remove(originalSignal, pos) end
+	
+    if index > 0 then
+
+        listenerCount[index] -= 1
+
+        if listenerCount[index] == 0 then
+
+            threads[index] = nil
+            listenerCount[index] = nil
+            table.insert(freeIndexes, index)
+
+        end
+    else
+
+        const absIndex = -index
+        deferredListenerCount[absIndex] -= 1
+
+        if deferredListenerCount[absIndex] == 0 then
+
+            deferredThreads[absIndex] = nil
+            deferredListenerCount[absIndex] = nil
+            table.insert(freeIndexes, absIndex)
+
+        end
+    end
+
+	(self :: any)[2] = nil
+	setmetatable(self, nil)
+end
+
+--[=[
+	@class Event<T>
+
+	Event type
+]=]
 
 local signal = {}
 signal.__index = signal
 
 function signal.new() : Signal
-	return setmetatable({_listeners = {}}, signal) :: any
+	return setmetatable({}, signal) :: any
 end
 
 function signal.Fire(self: Signal, ...: any)
-	for f in self._listeners do
-		task.spawn(f, ...)
-	end
+	for _, v in self do
+        if v > 0 then
+            const f = threads[v]
+            if f then task.spawn(f, ...) end
+        else
+            const f = deferredThreads[-v]
+            if f then task.defer(f, ...) end
+        end
+    end
 end
 
+--[=[
+	Connects the given function to the event.
+
+	@method Connect
+	@within Event<T>
+	@param f (...any) -> () -- Function to connect to
+	@return Connection
+]=]
 function signal.Connect(self: Signal, f: (...any) -> ()) : Connection
 
-	self._listeners[f] = true
+	local index = table.find(threads :: any, f) :: number
 
-	return {
-		Disconnect = function()
-			self._listeners[f] = nil
+	if not index then
+		if #freeIndexes > 0 then
+			index = math.abs(table.remove(freeIndexes) :: number)
+		else
+			index = #threads + 1
 		end
-	}
+	end
+
+	if not listenerCount[index] then
+		listenerCount[index] = 1
+	else
+		listenerCount[index] += 1
+	end
+
+	table.insert(self, index)
+	
+	const newConnection = setmetatable({
+		[1] = index,
+		[2] = self,
+	}, connection)
+
+	threads[index] = f
+
+	return newConnection :: Connection
 end
 
+--[=[
+	Connects the given function to the event, calls it using task.defer().
+
+	@method ConnectDeferred
+	@within Event<T>
+	@param f (...any) -> () -- Function to connect to
+	@return Connection
+]=]
+function signal.ConnectDeferred(self: Signal, f: (...any) -> ()) : Connection
+
+	local index = table.find(deferredThreads :: any, f) :: number
+
+	if not index then
+		if #freeIndexes > 0 then
+			index = math.abs(table.remove(freeIndexes) :: number)
+		else
+			index = #deferredThreads + 1
+		end
+	end
+
+	if not deferredListenerCount[index] then
+		deferredListenerCount[index] = 1
+	else
+		deferredListenerCount[index] += 1
+	end
+
+	table.insert(self, -index)
+	
+	const newConnection = setmetatable({
+		[1] = -index,
+		[2] = self,
+	}, connection)
+
+	deferredThreads[index] = f
+
+	return newConnection :: Connection
+end
+
+--[=[
+	Connects to the given function, upon being called for the first time it automatically disconnects the connection.
+
+	@method Once
+	@within Event<T>
+	@param f (...any) -> () -- Function to connect to
+	@return Connection
+]=]
 function signal.Once(self: Signal, f: (...any) -> ()) : Connection
 
 	local conn: Connection
@@ -132,27 +392,64 @@ function signal.Once(self: Signal, f: (...any) -> ()) : Connection
 	return conn
 end
 
+--[=[
+	Yields the current thread until the event is activated, returns the values from the event its connected to.
+
+	@method Wait
+	@within Event<T>
+	@return T
+]=]
+function signal.Wait<T>(self: Signal) : T
+
+	const currentThread = coroutine.running()
+	
+	self:Once(function(...)
+		coroutine.resume(currentThread, ...)
+	end)
+	
+	return coroutine.yield()
+end
+
 local function bulkEntityBitMask(id: number, name: string) : ()
 
-	local comp = components[name]
-	local entity = entityList[id]
-	local internal = {Value = comp._template}
-	local newSignal = signal.new()
-	local userdata = newproxy(true)
-	local mt = getmetatable(userdata)
+	const comp = components[name]
+	const entity = entityList[id]
+	const pos = comp._bitPosition
+	const template = comp._template
+	const newSignal = signal.new()
+	const userdata = newproxy(true)
+	const mt = getmetatable(userdata)
+
+	componentValueList[id] = componentValueList[id] or {}
+	componentValueList[id][pos] = template
 
 	mt.__index = function(_, k)
 		if k == "ComponentChanged" then return newSignal
-		elseif k == "Value" then return internal.Value
-		else error("Attempted to index a non existing key") end
+		elseif k == "Value" then return componentValueList[id][pos]
+		else error("Attempted to index a non existing key", 2) end
 	end
 
-	mt.__newindex = function(_, k, v)
-		if k == "Value" then
-			internal.Value = v
-			newSignal:Fire(v)
-		else
-			error("Attempted to change a non existing key")
+	if template ~= nil then
+		mt.__newindex = function(_, k: string, v)
+			if k == "Value" then
+				componentValueList[id][pos] = v
+				newSignal:Fire(v)
+			else
+				error("Attempted to change a non existing key", 2)
+			end
+		end
+	else
+		mt.__newindex = function(_, k: string, v)
+			if k == "Value" then
+				if typeof(v) == "Instance" then
+					componentValueList[id][pos] = v
+					newSignal:Fire(v)
+				else
+					error("Assigned value must be of Instance type", 2)
+				end
+			else
+				error("Attempted to change a non existing key", 2)
+			end
 		end
 	end
 
@@ -160,19 +457,6 @@ local function bulkEntityBitMask(id: number, name: string) : ()
 	entity.ComponentAdded:Fire(name)
 	
 end
-
---[=[
-	@interface Connection
-	@within ECS
-	@field Disconnect () -> ()
-]=]
-
---[=[
-	@interface Event<T>
-	@within ECS
-	@field Connect (T) -> Connection
-	@field Once (T) -> Connection
-]=]
 
 --[=[
 	@interface Component<T>
@@ -232,6 +516,16 @@ end
 
 	An entity table, ComponentAdded and ComponentRemoved return the name of the component
 	that was removed when calling functions connected to them. All of these values are read only.
+
+	Intellisense is supported by casting the type
+
+	```lua
+	local part = workspace.Part
+	local entity = select(-1, ECS.NewEntity(part)) :: ECS.Entity<BasePart>
+
+	print(entity.Instance.Position)
+	```
+
 ]=]
 
 --[=[
@@ -256,107 +550,10 @@ end
 	Romal's ECS module. Adds support for the ECS paradigm. Provides most common ECS features such as being able to query
 	entities.
 ]=]
-local ECS = {
+local ECS = { -- Modify these strings if you wish to change the tag or attribute name
 	_ENTITY_TAG_NAME = "Entity",
 	_ENTITY_ID_STRING = "EntityID",
 } :: ECS
-
---[=[
-	**Used in _for_ loops.** Returns the ID and Value they have with the given components in the second argument, if they contain a component
-	that is in the given array, then they are skipped over and not returned.
-
-	@param withoutList {string} -- Components it **must not** have
-	@param ... string -- Names of components
-	@return number -- ID of Entity
-	@return ... any -- Value it has with the given components
-]=]
-function ECS.QueryWithout(withoutList: {string}, ...: string) : () -> (number, ...any)
-	
-	local excludeMask = 0b0
-	local includeMask = 0b0
-	local componentNameList = {...}
-
-	for _, v in withoutList do
-		excludeMask = bit32.replace(excludeMask, 1, components[v]._bitPosition, 1)
-	end
-
-	for _, v in componentNameList do
-		includeMask = bit32.replace(includeMask, 1, components[v]._bitPosition, 1)
-	end
-
-	local idsToIterate = {}
-	local index = 0
-
-	for i, v in entityList do
-		if bit32.band(v.Components, includeMask) == includeMask and bit32.band(v.Components, excludeMask) == 0 then
-			table.insert(idsToIterate, i)
-		end
-	end
-
-	return function()
-		
-		index += 1
-		local id = idsToIterate[index]
-
-		if id == nil then return nil :: any end
-
-		local t = {id}
-
-		for _, v in componentNameList do
-			table.insert(t, components[v].EntityValues[id].Value)
-		end
-
-		return table.unpack(t)
-	end
-end
-
---[=[
-	**Used in _for_ loops.** Returns the ID and Value the entity has with the given components in the second argument.
-	Entities must have the component given in the first argument.
-
-	@param withList {string} -- Components it **must** have
-	@param ... string --Names of components
-	@return number -- ID of Entity
-	@return ... any -- Value it has with the given components
-]=]
-function ECS.QueryWith(withList: {string}, ...: string) : () -> (number, ...any)
-	
-	local mask = 0b0
-	local componentNameList = {...}
-
-	for _, v in componentNameList do
-		mask = bit32.replace(mask, 1, components[v]._bitPosition, 1)
-	end
-
-	for _, v in withList do
-		mask = bit32.replace(mask, 1, components[v]._bitPosition, 1)
-	end
-
-	local idsToIterate = {}
-	local index = 0
-
-	for i, v in entityList do
-		if bit32.band(v.Components, mask) == mask then
-			table.insert(idsToIterate, i)
-		end
-	end
-
-	return function()
-
-		index += 1
-		local id = idsToIterate[index]
-
-		if id == nil then return nil :: any end
-
-		local t = {id}
-
-		for _, v in componentNameList do
-			table.insert(t, components[v].EntityValues[id].Value)
-		end
-		
-		return table.unpack(t)
-	end
-end
 
 --[=[
 	**Used in _for_ loops.** Returns the ID and the value it currently has with the given components.
@@ -367,7 +564,7 @@ end
 	ECS.NewEntity()
 	ECS.NewEntity()
 
-	local id = ECS.NewEntity()
+	const id = ECS.NewEntity()
 
 	ECS.GiveComponent(id, "Test1")
 
@@ -381,17 +578,20 @@ end
 	@return number -- ID of Entity
 	@return ...any -- Value it has with the given components
 ]=]
-function ECS.Query(...: string) : () -> (number, ...any)
+function ECS.Query(...: string) : Iterator
 
-	local componentNameList = {...}
 	local mask = 0b0
 
+	const componentNameList = {...}
+	const idsToIterate = {}
+
 	for _, v in componentNameList do
-		mask = bit32.replace(mask, 1, components[v]._bitPosition, 1)
+		mask = bit32.replace(mask, 1, components[v]._bitPosition)
 	end
 
-	local idsToIterate = {}
-	local index = 0
+	if mask == 0 then
+		error("Missing arguments in Query()", 2)
+	end
 
 	for i, v in entityList do
 		if bit32.band(v.Components, mask) == mask then
@@ -399,21 +599,10 @@ function ECS.Query(...: string) : () -> (number, ...any)
 		end
 	end
 
-	return function()
-		
-		index += 1
-		local id = idsToIterate[index]
-
-		if id == nil then return nil :: any end
-
-		local t = {id}
-
-		for _, v in componentNameList do
-			table.insert(t, components[v].EntityValues[id].Value)
-		end
-
-		return table.unpack(t)
-	end
+	return setmetatable({
+		List = idsToIterate,
+		ComponentList = componentNameList,
+	}, iterator) :: Iterator
 end
 
 --[=[
@@ -424,7 +613,7 @@ end
 	@return number -- The ID of the Entity
 	@return Entity<Instance> -- The Entity table
 ]=]
-function ECS.NewEntity(instance: Instance?) : (number, ReadOnly<Entity<Instance>, "Components">)
+function ECS.NewEntity(instance: Instance?) : (number, Entity<Instance>)
 	
 	local ID = 0
 
@@ -442,7 +631,7 @@ function ECS.NewEntity(instance: Instance?) : (number, ReadOnly<Entity<Instance>
 		ComponentRemoved = signal.new(),
 	}
 	
-	local entity = entityList[ID] 
+	const entity = entityList[ID] 
 
 	if instance then
 		instance:AddTag(ECS._ENTITY_TAG_NAME)
@@ -464,9 +653,9 @@ end
 ]=]
 function ECS.BulkNewEntities(n: number?, instanceArray: {Instance}?, ...:string?) : {number}
 
-	local componentNameList = {...} :: any
-	local m = n or 1
-	local entityReturnList = {}
+	const componentNameList = {...} :: any
+	const m = n or 1
+	const entityReturnList = {}
 
 	if #componentNameList > 32 then 
 		error("Component list exceeds 32") 
@@ -499,7 +688,7 @@ function ECS.BulkNewEntities(n: number?, instanceArray: {Instance}?, ...:string?
 				local mask = 0b0
 
 				for _, v: string in componentNameList do
-					mask = bit32.replace(mask, 1, components[v]._bitPosition, 1)
+					mask = bit32.replace(mask, 1, components[v]._bitPosition)
 				end
 
 				entityList[ID].Components = bit32.bor(entityList[ID].Components, mask)
@@ -531,7 +720,7 @@ function ECS.BulkNewEntities(n: number?, instanceArray: {Instance}?, ...:string?
 				local mask = 0b0
 
 				for _, v: string in componentNameList do
-					mask = bit32.replace(mask, 1, components[v]._bitPosition, 1)
+					mask = bit32.replace(mask, 1, components[v]._bitPosition)
 				end
 
 				entityList[ID].Components = bit32.bor(entityList[ID].Components, mask)
@@ -554,8 +743,8 @@ end
 ]=]
 function ECS.BindToInstance(id: number, instance: Instance?) : ()
 
-	local entity = entityList[id]
-	local oldInstance = entity.Instance :: Instance?
+	const entity = entityList[id]
+	const oldInstance = entity.Instance :: Instance?
 
 	if oldInstance then
 		oldInstance:SetAttribute(ECS._ENTITY_ID_STRING, nil)
@@ -572,29 +761,30 @@ function ECS.BindToInstance(id: number, instance: Instance?) : ()
 end
 
 --[=[
-	Returns the Entity type
+	Returns the Entity type.
 
 	@param id number -- ID of Entity
 	@return Entity<Instance>
 ]=]
-function ECS.GetEntity(id: number) : ReadOnly<Entity<Instance>, "Components">
+function ECS.GetEntity(id: number) :Entity<Instance>
 	return entityList[id] :: any
 end
 
 --[=[
-	Removes an entity
+	Removes an entity.
 
 	@param id number -- ID of Entity
 ]=]
 function ECS.RemoveEntity(id: number) : ()
 
-	local instance = entityList[id].Instance
+	const instance = entityList[id].Instance
 
 	if instance then
 		instance:RemoveTag(ECS._ENTITY_TAG_NAME)
 		instance:SetAttribute(ECS._ENTITY_ID_STRING, nil)
 	end
 
+	componentValueList[id] = nil
 	entityList[id] = nil
 	
 	for i, v in components do
@@ -606,7 +796,7 @@ function ECS.RemoveEntity(id: number) : ()
 end
 
 --[=[
-	Removes all the existing entities
+	Removes all the existing entities.
 ]=]
 function ECS.ClearAllEntities() : ()
 
@@ -616,8 +806,25 @@ function ECS.ClearAllEntities() : ()
 
 	table.clear(freeIDs)
 	table.clear(entityList)
+	table.clear(componentValueList)
 	entityCount = 0
 	
+end
+
+--[=[
+	Returns all the existing IDs of all entities.
+
+	@return {number} -- Array of IDs
+]=]
+function ECS.GetAllIDs() : {number}
+	
+	const t = {}
+
+	for i in entityList do
+		table.insert(t, i)
+	end
+
+	return t
 end
 
 --[=[
@@ -626,8 +833,9 @@ end
 
 	@param name string -- Name of component
 	@param value T -- Default value for the component
-	@error "Invalid value" -- Value given is an invalid value
-	@error "Exceeded maximum" -- There is a maximum of 32 components that can be created
+	@error Invalid value -- Value given is an invalid value
+	@error Exceeded maximum -- There is a maximum of 32 components that can be created
+	@error Already existing componnet -- A component with the same name already exists
 
 	```lua
 	ECS.CreateComponent("Test", 1000) -- 1000 is the default value
@@ -644,26 +852,26 @@ end
 ]=]
 function ECS.CreateComponent<T>(name: string, value: T) : ()
 
+	assert(not components[name], `A component with the name {name} already exists`)
+
+	const valueType = typeof(value)
+
+	if valueType == "table" or valueType == "thread" or valueType == "function" or valueType == "userdata" then
+		error(`{valueType} is not a valid component value`, 2)
+	end
+
 	if componentCount >= 32 then
 		error("Exceeded maximum of 32 components")
 	else
 		componentCount += 1
 	end
 
-	local valueType = typeof(value)
-
-	if valueType == "table" or valueType == "thread" or valueType == "function" or valueType == "userdata" then
-		error(`{valueType} is not a valid component value`)
-	end
-
-	valueType = nil :: any
-
-	local freeBitSpace = #freeBits
+	const freeBitSpace = #freeBits
 
 	components[name] = {
 		_bitPosition = if freeBitSpace > 0 then table.remove(freeBits) :: number else nextBitPos,
 		EntityValues = {},
-		_template = value
+		_template = if valueType == "Instance" then nil else value
 	}
 
 	if freeBitSpace == 0 then
@@ -679,10 +887,15 @@ end
 ]=]
 function ECS.DestroyComponent(name: string) : ()
 
-	local bitPos = components[name]._bitPosition
+	const component = components[name]
+	const bitPos = component._bitPosition
 
 	for i, v in entityList do
-		entityList[i].Components = bit32.replace(v.Components, 0, bitPos, 1)
+		entityList[i].Components = bit32.replace(v.Components, 0, bitPos)
+	end
+
+	for i in component.EntityValues do
+		componentValueList[i][bitPos] = nil
 	end
 
 	componentCount -= 1
@@ -699,48 +912,68 @@ end
 ]=]
 function ECS.RemoveComponent(id: number, name: string) : ()
 	
-	local entity = entityList[id]
-	local comp = components[name]
+	const entity = entityList[id]
+	const comp = components[name]
 
-	entity.Components = bit32.replace(entity.Components, 0, comp._bitPosition, 1)
+	entity.Components = bit32.replace(entity.Components, 0, comp._bitPosition)
 	comp.EntityValues[id] = nil
+	componentValueList[id][comp._bitPosition] = nil
 	entity.ComponentRemoved:Fire(name)
 
 end
 
 --[=[
-	Gives the component to the given entity, returns the component
+	Gives the component to the given entity, returns the component.
 
 	@param id number -- ID of Entity
 	@param name string -- Name of component to give
+	@param defaultInstance -- Default value for instance based components
 	@return Component<T>
 ]=]
-function ECS.GiveComponent<T>(id: number, name: string) : Component<T>
+function ECS.GiveComponent<T>(id: number, name: string, defaultInstance: Instance?) : Component<T>
 
-	local comp = components[name]
-	local entity = entityList[id]
-	local template = comp._template
-	local internal = {Value = template}
-	local newSignal = signal.new()
-	local userdata = newproxy(true)
-	local mt = getmetatable(userdata)
+	const comp = components[name]
+	const entity = entityList[id]
+	const newSignal = signal.new()
+	const userdata = newproxy(true)
+	const mt = getmetatable(userdata)
+	const pos = comp._bitPosition
+	const template = comp._template
+
+	componentValueList[id] = componentValueList[id] or {}
+	componentValueList[id][pos] = if template ~= nil then template else defaultInstance
 
 	mt.__index = function(_, k)
 		if k == "ComponentChanged" then return newSignal
-		elseif k == "Value" then return internal.Value
-		else error("Attempted to index a non existing key") end
+		elseif k == "Value" then return componentValueList[id][pos]
+		else error("Attempted to index a non existing key", 2) end
 	end
 
-	mt.__newindex = function(_, k, v)
-		if k == "Value" then
-			internal.Value = v
-			newSignal:Fire(v)
-		else
-			error("Attempted to change a non existing key")
+	if template ~= nil then
+		mt.__newindex = function(_, k: string, v)
+			if k == "Value" then
+				componentValueList[id][pos] = v
+				newSignal:Fire(v)
+			else
+				error("Attempted to change a non existing key", 2)
+			end
+		end
+	else
+		mt.__newindex = function(_, k: string, v)
+			if k == "Value" then
+				if typeof(v) == "Instance" then
+					componentValueList[id][pos] = v
+					newSignal:Fire(v)
+				else
+					error("Assigned value must be of Instance type", 2)
+				end
+			else
+				error("Attempted to change a non existing key", 2)
+			end
 		end
 	end
 
-	entity.Components = bit32.replace(entityList[id].Components, 1, comp._bitPosition, 1)
+	entity.Components = bit32.replace(entityList[id].Components, 1, comp._bitPosition)
 	comp.EntityValues[id] = userdata :: Component<T>
 	entity.ComponentAdded:Fire(name)
 
@@ -755,7 +988,7 @@ end
 	@return boolean
 ]=]
 function ECS.HasComponent(id: number, name: string) : boolean
-	return bit32.extract(entityList[id].Components, components[name]._bitPosition, 1) == 1
+	return bit32.extract(entityList[id].Components, components[name]._bitPosition) == 1
 end
 
 return ECS
