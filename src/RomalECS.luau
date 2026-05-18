@@ -121,12 +121,12 @@ iterator.__iter = function(t: InternalIterator) : () -> (number, ...any)
 
 	return function()
 
-		const newIndex, id = next(t.List, index)
+		local newIndex, id = next(t.List, index)
 
 		if id == nil then return nil :: any end
 		index = newIndex :: number
 
-		const returnTable = table.create(#t.ComponentList + 1) :: {number}
+		local returnTable = table.create(#t.ComponentList + 1) :: {number}
 		returnTable[1] = id
 	
 		for _, v in t.ComponentList do
@@ -163,8 +163,8 @@ function iterator.With(self: InternalIterator, ...: string) : Iterator
 	
 	local mask = 0b0
 
-	const reference = self.List
-	const componentNameList = {...}
+	local reference = self.List
+	local componentNameList = {...}
 
 	for _, v in componentNameList do
 		mask = bit32.replace(mask, 1, components[v]._bitPosition)
@@ -204,8 +204,8 @@ function iterator.Without(self: InternalIterator, ...: string) : Iterator
 
 	local mask = 0b0
 
-	const reference = self.List
-	const componentNameList = {...}
+	local reference = self.List
+	local componentNameList = {...}
 
 	for _, v in componentNameList do
 		mask = bit32.replace(mask, 1, components[v]._bitPosition)
@@ -221,7 +221,7 @@ function iterator.Without(self: InternalIterator, ...: string) : Iterator
 end
 
 --[=[
-	Type returned by calling the methods of Event<T>.
+	Type returned by calling the methods of Event.
 
 	@class Connection
 ]=]
@@ -236,9 +236,9 @@ connection.__index = connection
 ]=]
 function connection.Disconnect(self: Connection) : ()
 
-	const index = (self :: any)[1]
-	const originalSignal = (self :: any)[2]
-	const pos = table.find(originalSignal, index)
+	local index = (self :: any)[1]
+	local originalSignal = (self :: any)[2]
+	local pos = table.find(originalSignal, index)
 
 	if pos then table.remove(originalSignal, pos) end
 	
@@ -255,7 +255,7 @@ function connection.Disconnect(self: Connection) : ()
         end
     else
 
-        const absIndex = -index
+        local absIndex = -index
         deferredListenerCount[absIndex] -= 1
 
         if deferredListenerCount[absIndex] == 0 then
@@ -272,7 +272,7 @@ function connection.Disconnect(self: Connection) : ()
 end
 
 --[=[
-	@class Event<T>
+	@class Event
 
 	Event type
 ]=]
@@ -287,10 +287,10 @@ end
 function signal.Fire(self: Signal, ...: any)
 	for _, v in self do
         if v > 0 then
-            const f = threads[v]
+            local f = threads[v]
             if f then task.spawn(f, ...) end
         else
-            const f = deferredThreads[-v]
+            local f = deferredThreads[-v]
             if f then task.defer(f, ...) end
         end
     end
@@ -300,7 +300,7 @@ end
 	Connects the given function to the event.
 
 	@method Connect
-	@within Event<T>
+	@within Event
 	@param f (...any) -> () -- Function to connect to
 	@return Connection
 ]=]
@@ -324,7 +324,7 @@ function signal.Connect(self: Signal, f: (...any) -> ()) : Connection
 
 	table.insert(self, index)
 	
-	const newConnection = setmetatable({
+	local newConnection = setmetatable({
 		[1] = index,
 		[2] = self,
 	}, connection)
@@ -338,7 +338,7 @@ end
 	Connects the given function to the event, calls it using task.defer().
 
 	@method ConnectDeferred
-	@within Event<T>
+	@within Event
 	@param f (...any) -> () -- Function to connect to
 	@return Connection
 ]=]
@@ -362,7 +362,7 @@ function signal.ConnectDeferred(self: Signal, f: (...any) -> ()) : Connection
 
 	table.insert(self, -index)
 	
-	const newConnection = setmetatable({
+	local newConnection = setmetatable({
 		[1] = -index,
 		[2] = self,
 	}, connection)
@@ -376,7 +376,7 @@ end
 	Connects to the given function, upon being called for the first time it automatically disconnects the connection.
 
 	@method Once
-	@within Event<T>
+	@within Event
 	@param f (...any) -> () -- Function to connect to
 	@return Connection
 ]=]
@@ -396,12 +396,12 @@ end
 	Yields the current thread until the event is activated, returns the values from the event its connected to.
 
 	@method Wait
-	@within Event<T>
+	@within Event
 	@return T
 ]=]
 function signal.Wait<T>(self: Signal) : T
 
-	const currentThread = coroutine.running()
+	local currentThread = coroutine.running()
 	
 	self:Once(function(...)
 		coroutine.resume(currentThread, ...)
@@ -412,13 +412,13 @@ end
 
 local function bulkEntityBitMask(id: number, name: string) : ()
 
-	const comp = components[name]
-	const entity = entityList[id]
-	const pos = comp._bitPosition
-	const template = comp._template
-	const newSignal = signal.new()
-	const userdata = newproxy(true)
-	const mt = getmetatable(userdata)
+	local comp = components[name]
+	local entity = entityList[id]
+	local pos = comp._bitPosition
+	local template = comp._template
+	local newSignal = signal.new()
+	local userdata = newproxy(true)
+	local mt = getmetatable(userdata)
 
 	componentValueList[id] = componentValueList[id] or {}
 	componentValueList[id][pos] = template
@@ -503,7 +503,6 @@ end
 	component.NewKey = "bar" -- Error
 	print(component.RealValue) -- Error
 	```
-
 ]=]
 
 --[=[
@@ -556,7 +555,7 @@ local ECS = { -- Modify these strings if you wish to change the tag or attribute
 } :: ECS
 
 --[=[
-	**Used in _for_ loops.** Returns the ID and the value it currently has with the given components.
+	Returns the ID and the value it currently has with the given components.
 
 	```lua
 	ECS.CreateComponent("Test1", 100)
@@ -564,7 +563,7 @@ local ECS = { -- Modify these strings if you wish to change the tag or attribute
 	ECS.NewEntity()
 	ECS.NewEntity()
 
-	const id = ECS.NewEntity()
+	local id = ECS.NewEntity()
 
 	ECS.GiveComponent(id, "Test1")
 
@@ -574,16 +573,17 @@ local ECS = { -- Modify these strings if you wish to change the tag or attribute
 	end
 	```
 
+	@tag Iterator
 	@param ... string -- Names of components
-	@return number -- ID of Entity
-	@return ...any -- Value it has with the given components
+	@return Iterator
+	@error Missing arguments -- No arguments were provided to the function
 ]=]
 function ECS.Query(...: string) : Iterator
 
 	local mask = 0b0
 
-	const componentNameList = {...}
-	const idsToIterate = {}
+	local componentNameList = {...}
+	local idsToIterate = {}
 
 	for _, v in componentNameList do
 		mask = bit32.replace(mask, 1, components[v]._bitPosition)
@@ -631,7 +631,7 @@ function ECS.NewEntity(instance: Instance?) : (number, Entity<Instance>)
 		ComponentRemoved = signal.new(),
 	}
 	
-	const entity = entityList[ID] 
+	local entity = entityList[ID] 
 
 	if instance then
 		instance:AddTag(ECS._ENTITY_TAG_NAME)
@@ -653,9 +653,9 @@ end
 ]=]
 function ECS.BulkNewEntities(n: number?, instanceArray: {Instance}?, ...:string?) : {number}
 
-	const componentNameList = {...} :: any
-	const m = n or 1
-	const entityReturnList = {}
+	local componentNameList = {...} :: any
+	local m = n or 1
+	local entityReturnList = {}
 
 	if #componentNameList > 32 then 
 		error("Component list exceeds 32") 
@@ -743,8 +743,8 @@ end
 ]=]
 function ECS.BindToInstance(id: number, instance: Instance?) : ()
 
-	const entity = entityList[id]
-	const oldInstance = entity.Instance :: Instance?
+	local entity = entityList[id]
+	local oldInstance = entity.Instance :: Instance?
 
 	if oldInstance then
 		oldInstance:SetAttribute(ECS._ENTITY_ID_STRING, nil)
@@ -777,7 +777,7 @@ end
 ]=]
 function ECS.RemoveEntity(id: number) : ()
 
-	const instance = entityList[id].Instance
+	local instance = entityList[id].Instance
 
 	if instance then
 		instance:RemoveTag(ECS._ENTITY_TAG_NAME)
@@ -818,7 +818,7 @@ end
 ]=]
 function ECS.GetAllIDs() : {number}
 	
-	const t = {}
+	local t = {}
 
 	for i in entityList do
 		table.insert(t, i)
@@ -845,6 +845,10 @@ end
 	print(component.Value) -- 1000
 	```
 
+	Different behavior is applied when the value is of type Instance. The default value of the component
+	will be nil, entities that are given this component will also have a value of nil unless given a
+	default instance to use when calling GiveComponent().
+
 	:::caution Invalid Values
 	`table`, `thread`, `userdata`, and `function` will cause the function to error, these types are not allowed
 	to be used for the value of the component.
@@ -854,7 +858,7 @@ function ECS.CreateComponent<T>(name: string, value: T) : ()
 
 	assert(not components[name], `A component with the name {name} already exists`)
 
-	const valueType = typeof(value)
+	local valueType = typeof(value)
 
 	if valueType == "table" or valueType == "thread" or valueType == "function" or valueType == "userdata" then
 		error(`{valueType} is not a valid component value`, 2)
@@ -866,7 +870,7 @@ function ECS.CreateComponent<T>(name: string, value: T) : ()
 		componentCount += 1
 	end
 
-	const freeBitSpace = #freeBits
+	local freeBitSpace = #freeBits
 
 	components[name] = {
 		_bitPosition = if freeBitSpace > 0 then table.remove(freeBits) :: number else nextBitPos,
@@ -887,8 +891,8 @@ end
 ]=]
 function ECS.DestroyComponent(name: string) : ()
 
-	const component = components[name]
-	const bitPos = component._bitPosition
+	local component = components[name]
+	local bitPos = component._bitPosition
 
 	for i, v in entityList do
 		entityList[i].Components = bit32.replace(v.Components, 0, bitPos)
@@ -912,8 +916,8 @@ end
 ]=]
 function ECS.RemoveComponent(id: number, name: string) : ()
 	
-	const entity = entityList[id]
-	const comp = components[name]
+	local entity = entityList[id]
+	local comp = components[name]
 
 	entity.Components = bit32.replace(entity.Components, 0, comp._bitPosition)
 	comp.EntityValues[id] = nil
@@ -923,7 +927,11 @@ function ECS.RemoveComponent(id: number, name: string) : ()
 end
 
 --[=[
-	Gives the component to the given entity, returns the component.
+	Gives the component to the given entity, returns the component. If the component
+	was created with a default value of type Instance then the default value will
+	be nil if not given an Instance in the defaultInstance parameter. Providing a
+	value to the parameter on a component that isn't an Instance based component will
+	cause the parameter to be ignored.
 
 	@param id number -- ID of Entity
 	@param name string -- Name of component to give
@@ -932,13 +940,13 @@ end
 ]=]
 function ECS.GiveComponent<T>(id: number, name: string, defaultInstance: Instance?) : Component<T>
 
-	const comp = components[name]
-	const entity = entityList[id]
-	const newSignal = signal.new()
-	const userdata = newproxy(true)
-	const mt = getmetatable(userdata)
-	const pos = comp._bitPosition
-	const template = comp._template
+	local comp = components[name]
+	local entity = entityList[id]
+	local newSignal = signal.new()
+	local userdata = newproxy(true)
+	local mt = getmetatable(userdata)
+	local pos = comp._bitPosition
+	local template = comp._template
 
 	componentValueList[id] = componentValueList[id] or {}
 	componentValueList[id][pos] = if template ~= nil then template else defaultInstance

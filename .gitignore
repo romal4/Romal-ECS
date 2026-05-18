@@ -8,3 +8,4 @@
 sourcemap.json
 moonwave.toml
 build/
+production_copy/
