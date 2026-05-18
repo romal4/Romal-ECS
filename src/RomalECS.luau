@@ -761,7 +761,7 @@ function ECS.BindToInstance(id: number, instance: Instance?) : ()
 end
 
 --[=[
-	Returns the Entity type.
+	Returns the entity with the given ID.
 
 	@param id number -- ID of Entity
 	@return Entity<Instance>
