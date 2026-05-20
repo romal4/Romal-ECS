@@ -766,7 +766,7 @@ end
 	@param id number -- ID of Entity
 	@return Entity<Instance>
 ]=]
-function ECS.GetEntity(id: number) :Entity<Instance>
+function ECS.GetEntity(id: number) : Entity<Instance>
 	return entityList[id] :: any
 end
 
